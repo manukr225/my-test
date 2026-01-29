@@ -2,49 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Secure Notes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirect Page with Multiple Logos</title>
+
+  <!-- CryptoJS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
   <style>
     body {
-      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
-      flex-direction: column;
-      gap: 30px;
     }
 
-    .logo {
-      width: 150px;
-      height: 150px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-
-    .logo:hover {
-      transform: scale(1.1);
+    .app {
+      width: 100%;
+      max-width: 400px;
+      background: #020617;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
 
     h2 {
       text-align: center;
-      font-family: Arial, sans-serif;
-      color: #333;
+      margin-bottom: 15px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+    }
+
+    textarea {
+      height: 120px;
+      resize: none;
+    }
+
+    button {
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    .secondary {
+      background: #334155;
     }
   </style>
 </head>
 <body>
-  <div>
-    <h2>Click on the logos to visit their pages</h2>
-    <!-- Instagram Logo -->
-    <a href="https://www.instagram.com" target="_blank">
-      <img class="logo" src="images/chatgpt.png" alt="Instagram Logo">
-    </a>
-    <!-- Twitter Logo -->
-    <a href="https://www.twitter.com" target="_blank">
-      <img class="logo" src="images/deepseek.png" alt="Twitter Logo">
-    </a>
-  </div>
+
+<div class="app">
+  <h2>🔐 Secure Notes</h2>
+
+  <input type="password" id="password" placeholder="Enter password">
+
+  <textarea id="note" placeholder="Write your secret note here..."></textarea>
+
+  <button onclick="saveNote()">Save Encrypted Note</button>
+  <button class="secondary" onclick="loadNote()">Load & Decrypt Note</button>
+</div>
+
+<script>
+  function saveNote() {
+    const password = document.getElementById("password").value;
+    const note = document.getElementById("note").value;
+
+    if (!password || !note) {
+      alert("Password and note are required!");
+      return;
+    }
+
+    const encrypted = CryptoJS.AES.encrypt(note, password).toString();
+    localStorage.setItem("secureNote", encrypted);
+
+    document.getElementById("note").value = "";
+    alert("✅ Note encrypted & saved!");
+  }
+
+  function loadNote() {
+    const password = document.getElementById("password").value;
+    const encrypted = localStorage.getItem("secureNote");
+
+    if (!password) {
+      alert("Enter password to decrypt!");
+      return;
+    }
+
+    if (!encrypted) {
+      alert("No saved note found!");
+      return;
+    }
+
+    try {
+      const decrypted = CryptoJS.AES.decrypt(encrypted, password)
+        .toString(CryptoJS.enc.Utf8);
+
+      if (!decrypted) {
+        alert("❌ Wrong password!");
+        return;
+      }
+
+      document.getElementById("note").value = decrypted;
+      alert("🔓 Note decrypted successfully!");
+    } catch (e) {
+      alert("Decryption failed!");
+    }
+  }
+</script>
+
 </body>
 </html>
