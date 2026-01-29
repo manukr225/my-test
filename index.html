@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Secure Notes Vault</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- CryptoJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
@@ -16,12 +16,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .app {
   width: 100%;
-  max-width: 450px;
+  max-width: 420px;
   background: #020617;
   border: 1px solid #1e293b;
   border-radius: 12px;
@@ -72,40 +72,43 @@ button.danger {
 <body>
 
 <div class="app">
-  <h2>🔐 Secure Notes Vault</h2>
+  <h2>🔐 Secure Notes</h2>
 
   <input type="password" id="password" placeholder="Master Password">
 
-  <textarea id="note" placeholder="Write your secure note here..."></textarea>
+  <textarea id="note" placeholder="Write your private note..."></textarea>
 
   <button onclick="saveNote()">Save Encrypted Note</button>
   <button class="secondary" onclick="loadNote()">Load & Decrypt</button>
 
   <button class="secondary" onclick="exportNote()">Export Encrypted File</button>
+
   <input type="file" id="importFile" hidden onchange="importNote()">
-  <button class="secondary" onclick="document.getElementById('importFile').click()">Import Encrypted File</button>
+  <button class="secondary" onclick="document.getElementById('importFile').click()">
+    Import Encrypted File
+  </button>
 
   <button class="danger" onclick="clearVault()">Clear Vault</button>
 </div>
 
 <script>
-const STORAGE_KEY = "secure_note_vault";
+const STORAGE_KEY = "secure_notes_vault";
 
 function saveNote() {
-  const password = passwordValue();
-  const note = noteValue();
+  const password = getPassword();
+  const note = getNote();
 
-  if (!password || !note) return alert("Password and note required");
+  if (!password || !note) return alert("Password & note required");
 
   const encrypted = CryptoJS.AES.encrypt(note, password).toString();
   localStorage.setItem(STORAGE_KEY, encrypted);
 
   document.getElementById("note").value = "";
-  alert("✅ Encrypted & saved locally");
+  alert("✅ Note encrypted & saved");
 }
 
 function loadNote() {
-  const password = passwordValue();
+  const password = getPassword();
   const encrypted = localStorage.getItem(STORAGE_KEY);
 
   if (!password) return alert("Enter password");
@@ -122,11 +125,10 @@ function exportNote() {
   if (!encrypted) return alert("Nothing to export");
 
   const blob = new Blob([encrypted], { type: "text/plain" });
-  const link = document.createElement("a");
-
-  link.href = URL.createObjectURL(blob);
-  link.download = "secure-note.enc";
-  link.click();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "secure-note.enc";
+  a.click();
 }
 
 function importNote() {
@@ -148,17 +150,17 @@ function clearVault() {
   }
 }
 
-function decrypt(data, password) {
+function decrypt(cipher, password) {
   try {
-    return CryptoJS.AES.decrypt(data, password)
+    return CryptoJS.AES.decrypt(cipher, password)
       .toString(CryptoJS.enc.Utf8);
   } catch {
     return "";
   }
 }
 
-const passwordValue = () => document.getElementById("password").value;
-const noteValue = () => document.getElementById("note").value;
+const getPassword = () => document.getElementById("password").value;
+const getNote = () => document.getElementById("note").value;
 </script>
 
 </body>
